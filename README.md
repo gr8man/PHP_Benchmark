@@ -17,11 +17,11 @@ This benchmark performs intensive operations to test:
 
 Use wget or curl to download the file directly to your public directory:
 
-wget \[https://raw.githubusercontent.com/gr8man/PHP\_Benchmark/refs/heads/main/bench.php\](https://raw.githubusercontent.com/gr8man/PHP\_Benchmark/refs/heads/main/bench.php)
+wget https://raw.githubusercontent.com/gr8man/PHP_Benchmark/refs/heads/main/bench.php
 
 *or*
 
-curl \-O \[https://raw.githubusercontent.com/gr8man/PHP\_Benchmark/refs/heads/main/bench.php\](https://raw.githubusercontent.com/gr8man/PHP\_Benchmark/refs/heads/main/bench.php)
+curl \-O https://raw.githubusercontent.com/gr8man/PHP_Benchmark/refs/heads/main/bench.php
 
 ### **Option 2: Manual Download**
 
