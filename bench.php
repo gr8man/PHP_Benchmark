@@ -589,5 +589,38 @@ $benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
     return $successCount;
 });
 
+$benchmark->addTest("Multi-Processing (pcntl_fork)", 10, function ($limit) {
+    if (!function_exists('pcntl_fork')) {
+        return "Brak pcntl";
+    }
+
+    $workers = 4;
+    $pids = [];
+
+    for ($i = 0; $i < $workers; $i++) {
+        $pid = pcntl_fork();
+        if ($pid == -1) {
+            return "Błąd forkowania";
+        } elseif ($pid) {
+            // Proces główny zapisuje ID dziecka
+            $pids[] = $pid;
+        } else {
+            // Proces potomny wykonuje własną pracę
+            $sum = 0;
+            for ($j = 0; $j < $limit * 50000; $j++) {
+                $sum += sqrt($j);
+            }
+            exit(0); // Dziecko kończy działanie
+        }
+    }
+
+    // Proces główny czeka na zakończenie wszystkich procesów potomnych
+    foreach ($pids as $pid) {
+        pcntl_waitpid($pid, $status);
+    }
+
+    return "Zakończono $workers procesy";
+});
+
 $benchmark->runTests();
 $benchmark->printResult();
