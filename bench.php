@@ -21,11 +21,13 @@ class PhpBenchmark
     public $results_all = [];
     private $isCli;
     private $memory_limit;
+    private $version;
 
     public function __construct()
     {
         $this->isCli = php_sapi_name() === "cli";
         $this->memory_limit = ini_get("memory_limit");
+        $this->version = '1.0.1';
     }
 
     public function addTest(string $name, int $count, callable $function)
@@ -121,7 +123,7 @@ class PhpBenchmark
         // Header bar with version and repository link
         echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #f8f9fa; border-radius: 6px; font-weight: bold; border: 1px solid #e9ecef; margin-bottom: 20px; font-size: 16px;">';
         echo '<div style="display: flex; flex-direction: column;">';
-        echo '<span style="color: #2c3e50; font-size: 20px; text-transform: uppercase;">PHP Benchmark <span style="font-size: 14px; color: #7f8c8d; text-transform: none;">v1.0</span></span>';
+        echo '<span style="color: #2c3e50; font-size: 20px; text-transform: uppercase;">PHP Benchmark <span style="font-size: 14px; color: #7f8c8d; text-transform: none;">v'.$this->version.'</span></span>';
         echo '<a href="https://github.com/gr8man/PHP_Benchmark" target="_blank" style="font-size: 11px; color: #3498db; text-decoration: none; font-weight: normal; margin-top: 4px;">GitHub: gr8man</a>';
         echo '</div>';
         echo "<span>Total Time: <span id='result' style='color: #d35400;'>{$this->results_all["time"]}</span> | Peak Mem: <span style='color: #27ae60;'>{$this->results_all["memory"]}</span></span>";
