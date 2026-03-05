@@ -505,5 +505,66 @@ $benchmark->addTest('Memory (Allocation & GC)', 50000, function ($limit) {
     return $data;
 });
 
+$benchmark->addTest("JIT: Mandelbrot", 100, function ($limit) {
+    $r = 0;
+    for ($i = 0; $i < $limit; $i++) {
+        for ($y = -39; $y < 39; $y++) {
+            for ($x = -39; $x < 39; $x++) {
+                $cr = $x / 20.0;
+                $ci = $y / 20.0;
+                $zr = $cr; 
+                $zi = $ci;
+                for ($n = 0; $n < 49; $n++) {
+                    $a = $zr * $zr - $zi * $zi + $cr;
+                    $zi = 2 * $zr * $zi + $ci;
+                    $zr = $a;
+                    if ($zr * $zr + $zi * $zi > 16) break;
+                }
+                $r += $n;
+            }
+        }
+    }
+    return $r;
+});
+
+$benchmark->addTest("JIT: Bubble Sort (Pure PHP)", 100, function ($limit) {
+    $sum = 0;
+    for ($i = 0; $i < $limit; $i++) {
+        $arr = range(500, 1);
+        $n = count($arr);
+        for ($j = 0; $j < $n - 1; $j++) {
+            for ($k = 0; $k < $n - $j - 1; $k++) {
+                if ($arr[$k] > $arr[$k + 1]) {
+                    $temp = $arr[$k];
+                    $arr[$k] = $arr[$k + 1];
+                    $arr[$k + 1] = $temp;
+                }
+            }
+        }
+        $sum += $arr[0];
+    }
+    return $sum;
+});
+
+$benchmark->addTest("JIT: Sieve of Eratosthenes", 2000, function ($limit) {
+    $primesCount = 0;
+    for ($i = 0; $i < $limit; $i++) {
+        $max = 10000;
+        $sieve = array_fill(0, $max, true);
+        $sieve[0] = false;
+        $sieve[1] = false;
+        
+        for ($p = 2; $p * $p < $max; $p++) {
+            if ($sieve[$p]) {
+                for ($j = $p * $p; $j < $max; $j += $p) {
+                    $sieve[$j] = false;
+                }
+            }
+        }
+        $primesCount += $sieve[9973] ? 1 : 0;
+    }
+    return $primesCount;
+});
+
 $benchmark->runTests();
 $benchmark->printResult();
