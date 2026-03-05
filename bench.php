@@ -566,5 +566,28 @@ $benchmark->addTest("JIT: Sieve of Eratosthenes", 2000, function ($limit) {
     return $primesCount;
 });
 
+$benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
+    // Tworzenie tymczasowego pliku PHP
+    $tmpFile = sys_get_temp_dir() . '/php_bench_opcache_test.php';
+    file_put_contents($tmpFile, '<?php return "opcache_hit";');
+
+    $successCount = 0;
+    
+    // Wielokrotne ładowanie tego samego pliku
+    for ($i = 0; $i < $limit; $i++) {
+        $result = include $tmpFile;
+        if ($result === "opcache_hit") {
+            $successCount++;
+        }
+    }
+
+    // Sprzątanie
+    if (file_exists($tmpFile)) {
+        unlink($tmpFile);
+    }
+    
+    return $successCount;
+});
+
 $benchmark->runTests();
 $benchmark->printResult();
