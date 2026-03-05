@@ -42,25 +42,28 @@ class PhpBenchmark
         ob_start();
         $this->startTime = microtime(true);
         $this->startMemory = memory_get_usage();
+        
         foreach ($this->tests as $test) {
-            // Wymuszenie odśmiecania pamięci przed i po teście
             gc_collect_cycles();
 
             $startMem = memory_get_usage();
             $start = microtime(true);
 
-            // Run the actual test
-            $resultBuffer = $test["func"]($test["count"]);
+            try {
+                $resultBuffer = $test["func"]($test["count"]);
+                unset($resultBuffer);
 
-            // Usunięcie bufora, aby zwolnić pamięć
-            unset($resultBuffer);
+                $time = $this->formatTime(microtime(true) - $start);
+                $memory = $this->formatSize(max(0, memory_get_usage() - $startMem));
+            } catch (\Throwable $e) {
+                $time = "Błąd: " . $e->getMessage();
+                $memory = "-";
+            }
 
             $this->results[] = [
                 "name" => $test["name"],
-                "time" => $this->formatTime(microtime(true) - $start),
-                "memory" => $this->formatSize(
-                    max(0, memory_get_usage() - $startMem)
-                ),
+                "time" => $time,
+                "memory" => $memory,
             ];
 
             gc_collect_cycles();
@@ -589,38 +592,6 @@ $benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
     return $successCount;
 });
 
-$benchmark->addTest("Multi-Processing (pcntl_fork)", 10, function ($limit) {
-    if (!function_exists('pcntl_fork')) {
-        return "Brak pcntl";
-    }
-
-    $workers = 4;
-    $pids = [];
-
-    for ($i = 0; $i < $workers; $i++) {
-        $pid = pcntl_fork();
-        if ($pid == -1) {
-            return "Błąd forkowania";
-        } elseif ($pid) {
-            // Proces główny zapisuje ID dziecka
-            $pids[] = $pid;
-        } else {
-            // Proces potomny wykonuje własną pracę
-            $sum = 0;
-            for ($j = 0; $j < $limit * 50000; $j++) {
-                $sum += sqrt($j);
-            }
-            exit(0); // Dziecko kończy działanie
-        }
-    }
-
-    // Proces główny czeka na zakończenie wszystkich procesów potomnych
-    foreach ($pids as $pid) {
-        pcntl_waitpid($pid, $status);
-    }
-
-    return "Zakończono $workers procesy";
-});
 
 $benchmark->runTests();
 $benchmark->printResult();
