@@ -27,7 +27,7 @@ class PhpBenchmark
     {
         $this->isCli = php_sapi_name() === "cli";
         $this->memory_limit = ini_get("memory_limit");
-        $this->version = '1.0.1';
+        $this->version = '1.0.2';
     }
 
     public function addTest(string $name, int $count, callable $function)
@@ -58,7 +58,7 @@ class PhpBenchmark
                 $time = $this->formatTime(microtime(true) - $start);
                 $memory = $this->formatSize(max(0, memory_get_usage() - $startMem));
             } catch (\Throwable $e) {
-                $time = "Błąd: " . $e->getMessage();
+                $time = "Error: " . $e->getMessage();
                 $memory = "-";
             }
 
@@ -105,6 +105,9 @@ class PhpBenchmark
             header("Cache-Control: no-cache, must-revalidate, max-age=0");
         }
 
+        // Output CSS styles
+        echo $this->generateStyles();
+
         // Gather system information for display
         $info = [
             "PHP" => PHP_VERSION,
@@ -118,44 +121,194 @@ class PhpBenchmark
         ];
 
         // Main container - minimalist light design
-        echo '<div style="font-family: ui-monospace, monospace; max-width: 900px; margin: 10px auto; color: #333; background: #fff; padding: 15px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #ddd; font-size: 13px; line-height: 1.3;">';
+        echo '<div class="benchmark-container">';
 
         // Header bar with version and repository link
-        echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #f8f9fa; border-radius: 6px; font-weight: bold; border: 1px solid #e9ecef; margin-bottom: 20px; font-size: 16px;">';
-        echo '<div style="display: flex; flex-direction: column;">';
-        echo '<span style="color: #2c3e50; font-size: 20px; text-transform: uppercase;">PHP Benchmark <span style="font-size: 14px; color: #7f8c8d; text-transform: none;">v'.$this->version.'</span></span>';
-        echo '<a href="https://github.com/gr8man/PHP_Benchmark" target="_blank" style="font-size: 11px; color: #3498db; text-decoration: none; font-weight: normal; margin-top: 4px;">GitHub: gr8man</a>';
+        echo '<div class="benchmark-header">';
+        echo '<div class="header-left">';
+        echo '<span class="benchmark-title">PHP Benchmark <span class="benchmark-version">v'.$this->version.'</span></span>';
+        echo '<a href="https://github.com/gr8man/PHP_Benchmark" target="_blank" class="github-link">GitHub: gr8man</a>';
         echo '</div>';
-        echo "<span>Total Time: <span id='result' style='color: #d35400;'>{$this->results_all["time"]}</span> | Peak Mem: <span style='color: #27ae60;'>{$this->results_all["memory"]}</span></span>";
+        echo "<span class='header-results'>Total Time: <span id='result' class='total-time'>{$this->results_all["time"]}</span> | Peak Mem: <span class='peak-memory'>{$this->results_all["memory"]}</span></span>";
         echo '</div>';
 
-        echo '<div style="display: flex; gap: 20px; align-items: flex-start;">';
+        echo '<div class="benchmark-content">';
 
         // Left Column: System Info with row separators
-        echo '<div style="flex: 1; min-width: 260px;">';
-        echo '<h4 style="margin: 0 0 10px; color: #2980b9; border-bottom: 2px solid #ecf0f1; padding-bottom: 6px; font-size: 14px;">System Info</h4>';
-        echo '<table style="width: 100%; border-collapse: collapse;">';
+        echo '<div class="system-info-column">';
+        echo '<h4 class="section-title">System Info</h4>';
+        echo '<table class="system-info-table">';
         foreach ($info as $key => $val) {
-            echo "<tr><td style='padding: 6px 0; color: #555; font-weight: 600; border-bottom: 1px solid #f1f1f1;'>{$key}</td><td style='padding: 6px 0; text-align: right; color: #333; border-bottom: 1px solid #f1f1f1;'>{$val}</td></tr>";
+            echo "<tr><td class='info-key'>{$key}</td><td class='info-value'>{$val}</td></tr>";
         }
         echo '</table>';
         echo '</div>';
 
         // Right Column: Benchmark Results table
-        echo '<div style="flex: 2;">';
-        echo '<h4 style="margin: 0 0 10px; color: #2980b9; border-bottom: 2px solid #ecf0f1; padding-bottom: 6px; font-size: 14px;">Test Results</h4>';
-        echo '<table style="width: 100%; border-collapse: collapse;">';
-        echo "<tr><th style='text-align: left; padding: 6px 0; color: #2c3e50; border-bottom: 1px solid #bdc3c7;'>Test Name</th><th style='text-align: right; color: #2c3e50; border-bottom: 1px solid #bdc3c7;'>Time</th></tr>";
+        echo '<div class="results-column">';
+        echo '<h4 class="section-title">Test Results</h4>';
+        echo '<table class="results-table">';
+        echo "<tr><th class='test-name-header'>Test Name</th><th class='test-time-header'>Time</th></tr>";
         foreach ($this->results as $result) {
             echo "<tr>";
-            echo "<td style='padding: 6px 0; border-bottom: 1px solid #f1f1f1; color: #34495e;'>{$result["name"]}</td>";
-            echo "<td style='text-align: right; color: #d35400; border-bottom: 1px solid #f1f1f1; font-weight: 500;'>{$result["time"]}</td>";
+            echo "<td class='test-name'>{$result["name"]}</td>";
+            echo "<td class='test-time'>{$result["time"]}</td>";
             echo "</tr>";
         }
         echo '</table>';
         echo '</div>';
 
         echo '</div></div>';
+    }
+
+    private function generateStyles()
+    {
+        return <<<CSS
+<style>
+.benchmark-container {
+    font-family: ui-monospace, monospace;
+    max-width: 900px;
+    margin: 10px auto;
+    color: #333;
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.benchmark-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-weight: bold;
+    border: 1px solid #e9ecef;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.benchmark-title {
+    color: #2c3e50;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+.benchmark-version {
+    font-size: 12px;
+    color: #7f8c8d;
+    text-transform: none;
+}
+
+.github-link {
+    font-size: 10px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: normal;
+    margin-top: 3px;
+}
+
+.header-results {
+    font-size: 12px;
+}
+
+.total-time {
+    color: #d35400;
+}
+
+.peak-memory {
+    color: #27ae60;
+}
+
+.benchmark-content {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.system-info-column {
+    flex: 1;
+    min-width: 240px;
+}
+
+.results-column {
+    flex: 2;
+}
+
+.section-title {
+    margin: 0 0 8px;
+    color: #2980b9;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 5px;
+    font-size: 12px;
+}
+
+.system-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-key {
+    padding: 5px 0;
+    color: #555;
+    font-weight: 600;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 11px;
+}
+
+.info-value {
+    padding: 5px 0;
+    text-align: right;
+    color: #333;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 11px;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.test-name-header {
+    text-align: left;
+    padding: 5px 0;
+    color: #2c3e50;
+    border-bottom: 1px solid #bdc3c7;
+    font-size: 11px;
+}
+
+.test-time-header {
+    text-align: right;
+    color: #2c3e50;
+    border-bottom: 1px solid #bdc3c7;
+    font-size: 11px;
+}
+
+.test-name {
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f1f1;
+    color: #34495e;
+    font-size: 11px;
+}
+
+.test-time {
+    text-align: right;
+    color: #d35400;
+    border-bottom: 1px solid #f1f1f1;
+    font-weight: 500;
+    font-size: 11px;
+}
+</style>
+CSS;
     }
 }
 
@@ -296,7 +449,6 @@ $benchmark->addTest("Loops & Logic (Heavy Branching)", 50000, function ($limit) 
     return $x + $y;
 });
 
-// Zmniejszono ze 1.500.000 do 200.000 (wasm ma mało RAM)
 $benchmark->addTest("Object (Instantiation & Magic Methods)", 600000, function ($limit) {
     $checksum = 0;
 
@@ -481,10 +633,8 @@ $benchmark->addTest('IO::File Read', 10000, function ($limit) {
 $benchmark->addTest('Memory (Allocation & GC)', 50000, function ($limit) {
     $data = [];
 
-    // Pobieramy bazowe zużycie dla tego konkretnego testu
     $startMem = memory_get_usage();
 
-    // Bezpieczny limit WZGLĘDNY dla Wasm (pozwalamy zużyć DODATKOWE 5MB ponad to co już jest)
     $maxRelativeAllocation = 30 * 1024 * 1024;
 
     $actualLimit = 0;
@@ -572,13 +722,20 @@ $benchmark->addTest("JIT: Sieve of Eratosthenes", 2000, function ($limit) {
 });
 
 $benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
-    // Tworzenie tymczasowego pliku PHP
     $tmpFile = sys_get_temp_dir() . '/php_bench_opcache_test.php';
-    file_put_contents($tmpFile, '<?php return "opcache_hit";');
+
+    // Generujemy większy plik, który wymaga więcej pracy podczas kompilacji
+    $content = "<?php\n";
+    $content .= "class HeavyClass {\n";
+    for ($i = 0; $i < 200; $i++) {
+        $content .= "    public function method{$i}() { return 'method{$i}'; }\n";
+    }
+    $content .= "}\n";
+    $content .= "return 'opcache_hit';\n";
+
+    file_put_contents($tmpFile, $content);
 
     $successCount = 0;
-    
-    // Wielokrotne ładowanie tego samego pliku
     for ($i = 0; $i < $limit; $i++) {
         $result = include $tmpFile;
         if ($result === "opcache_hit") {
@@ -586,11 +743,10 @@ $benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
         }
     }
 
-    // Sprzątanie
     if (file_exists($tmpFile)) {
         unlink($tmpFile);
     }
-    
+
     return $successCount;
 });
 
