@@ -721,24 +721,22 @@ $benchmark->addTest("JIT: Sieve of Eratosthenes", 2000, function ($limit) {
     return $primesCount;
 });
 
-$benchmark->addTest("OPcache: Repeated File Include", 20000, function ($limit) {
+$benchmark->addTest("OPcache: Repeated File Include", 1000, function ($limit) {
     $tmpFile = sys_get_temp_dir() . '/php_bench_opcache_test.php';
 
-    // Generujemy większy plik, który wymaga więcej pracy podczas kompilacji
-    $content = "<?php\n";
-    $content .= "class HeavyClass {\n";
-    for ($i = 0; $i < 200; $i++) {
-        $content .= "    public function method{$i}() { return 'method{$i}'; }\n";
+    // Generujemy plik z dużą tablicą (np. 2000 elementów, każdy to 100-znakowy string)
+    $largeArray = [];
+    for ($i = 0; $i < 2000; $i++) {
+        $largeArray['key_' . $i] = str_repeat('x', 100);
     }
-    $content .= "}\n";
-    $content .= "return 'opcache_hit';\n";
-
+    $content = "<?php\nreturn " . var_export($largeArray, true) . ";\n";
     file_put_contents($tmpFile, $content);
 
     $successCount = 0;
     for ($i = 0; $i < $limit; $i++) {
         $result = include $tmpFile;
-        if ($result === "opcache_hit") {
+        // Sprawdzamy, czy wynik jest tablicą (można też sprawdzić konkretny klucz)
+        if (is_array($result) && isset($result['key_0'])) {
             $successCount++;
         }
     }
